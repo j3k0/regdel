@@ -323,14 +323,17 @@ class App:
         self.view = AccountsView(self, self.scr)
         self.views = [self.view]
 
+    def back(self):
+        self.views.pop()
+        if not self.views: return True
+        self.view = self.views[-1]
+        self.view.refresh()
+
     def process(self, req):
         #XXX: auto call refresh if lineno or offset changed.
         step = 0
         if req == "QUIT":
-            self.views.pop()
-            if not self.views: return True
-            self.view = self.views[-1]
-            self.view.refresh()
+            return self.back()
         if req == "REAL":
             self.view.toggle_real()
             self.view.refresh()
@@ -361,6 +364,8 @@ class App:
                 self.view = view
                 self.view.refresh()
         if req == "BALANCE":
+            if isinstance(self.view, BalanceView):
+                return self.back()
             account = self.view.selected_account(self.view.lineno)
             if account:
                 view = BalanceView(self, self.scr, account)
