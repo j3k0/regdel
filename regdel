@@ -232,15 +232,32 @@ class RegView(View):
         line = self.lines[i]
         if not line: return
         cur = 'cursor' if i == self.lineno else None
-        self.addstr("{} ", line['date'], attr = cur or 'date')
-        self.addstr("{:<20.20} ", line['payee'], attr = cur or 'payee')
-        self.addstr("{:<20.20} ", line['account'], attr = cur or 'payee')
-        self.addstr("{:>20} ", line['amount'], attr = cur or 'value_pos')
-        tot = "ERR"
+
+        # Compute optimal field widths
+        fullWidth = self.win.getmaxyx()[1]
+        dateWidth = 11 # self.win.getyx()[1]
+        amountWidth = 18
+        totWidth = 18
+        payeeWidth = int((fullWidth - dateWidth - amountWidth - totWidth) * 2 / 5)
+        accountWidth = fullWidth - payeeWidth - amountWidth - dateWidth - totWidth
+
+        # Adjust sizes to add spaces after each fields
+        dateWidth -= 1
+        payeeWidth -= 2
+        accountWidth -= 1
+        amountWidth -= 1
+        totWidth -= 1
+
+        # Render the line
+        self.addstr("{:<%d} " % dateWidth, line['date'], attr = cur or 'date')
+        self.addstr("{:<%d.%d}  " % (payeeWidth, payeeWidth), line['payee'], attr = cur or 'payee')
+        self.addstr("{:<%d.%d} " % (accountWidth, accountWidth), line['account'], attr = cur or 'payee')
+        self.addstr("{:>%d} " % (amountWidth), line['amount'], attr = cur or 'value_pos')
+        tot = " "
         for t in line['total'].split('\\n'):
             if line['commodity'] in t:
                 tot = t
-        self.addstr("{:>20} ", tot, attr = cur)
+        self.addstr("{:>%d}" % totWidth, tot, attr = cur)
 
     def render_bar(self, win):
         win.addstr(self.account)
