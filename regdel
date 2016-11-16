@@ -64,6 +64,8 @@ KEY_MAP = {
 
 def clamp(x, a, b): return min(max(x, a), b)
 
+def cleanReg(str): return str.replace('/', '\\/')
+
 def ledger(path, cmd, query="", form=None, commodity=None, real=None, options=None):
     args = ['ledger', '-f', path]
     args += [cmd]
@@ -80,7 +82,7 @@ def ledger(path, cmd, query="", form=None, commodity=None, real=None, options=No
         args += ['-X', commodity]
     if real is True:
         args += ['--real']
-    args += [query]
+    args += [cleanReg(query)]
     out = subprocess.check_output(args, stderr=subprocess.STDOUT)
     out = [x for x in out.split('\n') if x.strip()]
     if form is not None:
